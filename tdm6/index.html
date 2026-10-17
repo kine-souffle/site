@@ -1898,8 +1898,12 @@ let form=blankPatient();
 /* ---------- données patient transmises par le DPI dans le lien (#ini=…&ev=…) ----------
    La partie après # n'est jamais envoyée au serveur qui héberge la page. */
 function readDpiLink(){
-  const h=location.hash.replace(/^#/,''); if(!h||h.indexOf('=')<0) return null;
-  const q={}; h.split('&').forEach(kv=>{ const i=kv.indexOf('='); if(i<0) return; let v=kv.slice(i+1); try{ v=decodeURIComponent(v.replace(/\+/g,' ')); }catch(e){} q[kv.slice(0,i)]=v.trim(); });
+  const h=location.hash.replace(/^#/,''); if(!h) return null;
+  const q={};
+  // format court (sans « & », que Windows coupe en ouvrant le navigateur) : #tdm6_INI_EVAL_SEXE_AGE_TAILLE_POIDS_O2_AAAAMMJJ
+  if(/^tdm6_/i.test(h)){ const f=h.split('_'); ['','ini','ev','sx','age','ht','wt','o2','d'].forEach((k,i)=>{ if(k&&f[i]!=null){ let v=f[i]; try{ v=decodeURIComponent(v); }catch(e){} q[k]=v.trim(); } }); }
+  else if(h.indexOf('=')<0) return null;
+  else h.split('&').forEach(kv=>{ const i=kv.indexOf('='); if(i<0) return; let v=kv.slice(i+1); try{ v=decodeURIComponent(v.replace(/\+/g,' ')); }catch(e){} q[kv.slice(0,i)]=v.trim(); });
   const dot=v=>v==null?'':String(v).replace(',','.').replace(/[^0-9.]/g,'');
   const o={};
   if(q.ini) o.ini=q.ini.toUpperCase().slice(0,6);
