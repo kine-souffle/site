@@ -1867,7 +1867,7 @@ function dataXlsx(r){
   const rows=[];
   const info=[[1,'TDM6 – données pour le DPI (ne pas modifier)',null,1],[3,'Initiales',p.ini],[4,'Évaluation',p.eval],[5,'Date du test',dateFr(p.date)],
     [6,'Durée',compute(r).dur!=null?mmss(compute(r).dur):''],[7,'Arrêt prématuré',r.run.stopReason||'non'],
-    [9,"Dans le DPI : Données > Modifier les liens > Changer la source (TDM6_Eval"+evalNum(r)+".xlsx) > choisir ce fichier, puis Rompre la liaison."],
+    [9,"Dans le DPI du patient : onglet TDM6 > bouton « Importer le TDM6 » > choisir ce fichier."],
     [20,'Onglet TDM6 du DPI, colonne '+p.eval,'Valeur',1]];
   info.forEach(([n,a,b,st])=>rows.push([n,cell('A'+n,a,st?1:0)+cell('B'+n,b,st?1:0)]));
   dpiRaw(r).forEach(([n,a,b])=>rows.push([n,cell('A'+n,a)+cell('B'+n,b,2)]));
