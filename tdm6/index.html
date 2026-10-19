@@ -79,6 +79,12 @@ input.missing{border-color:var(--bad)}
 /* test */
 #sTest{display:flex;flex-direction:column;gap:10px;min-height:calc(100dvh - 40px)}
 .clockbar{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+/* ligne du chrono fixée en haut pendant le défilement */
+.clockstick{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;flex-direction:column;gap:6px;
+  margin:0 -12px;padding:calc(env(safe-area-inset-top,0px) + 6px) 12px 8px;margin-top:calc(-1 * env(safe-area-inset-top,0px))}
+.clockstick.stuck{box-shadow:0 6px 10px -8px rgba(0,0,0,.35)}
+.clockstick.stuck .time{font-size:clamp(56px,16vw,84px)}
+@media (prefers-reduced-motion:no-preference){.clockstick .time{transition:font-size .15s}}
 .time{font-family:var(--f-display);font-weight:600;font-size:clamp(76px,24vw,128px);line-height:.85;font-variant-numeric:tabular-nums}
 .time.warn{color:var(--warn)}
 .clockside{display:flex;flex-direction:column;align-items:flex-end;gap:4px;text-align:right}
@@ -194,11 +200,13 @@ body.testing header{display:none}
 
   <!-- 3. Test -->
   <section id="sTest" hidden>
+    <div class="clockstick" id="clockStick">
     <div class="clockbar">
       <div class="time" id="time">6:00</div>
       <div class="clockside"><strong id="testWho"></strong><button type="button" class="ghost" id="btnSound" style="padding:4px 8px;font-size:13px">Bip : oui</button></div>
     </div>
     <div class="bar"><i id="barFill"></i></div>
+    </div>
     <div class="prompt" id="prompt"><b id="promptT">Départ</b><span id="promptX"></span></div>
     <button class="lapbtn" id="btnLap" type="button"><span class="n" id="lapCount">0</span><span class="t" id="lapInfo">tour · 0 m</span></button>
     <div class="mcard" id="mCard">
@@ -2146,6 +2154,7 @@ function tick(){
 if(cur&&cur.run.status==='running'){ const t=Date.now()-cur.run.start; lastMinute=Math.floor(t/60000); warned15=DUR-t<=15000; lockScreen(); }
 if(cur&&cur.run.status==='done'){ const r=Date.now()-cur.run.end; lastRecupBeep=r>=180000?3:r>=60000?1:0; }
 setInterval(tick,250);
+addEventListener('scroll',()=>{ const el=$('clockStick'); if(el) el.classList.toggle('stuck',scrollY>40); },{passive:true});
 document.addEventListener('keydown',e=>{ if(e.code==='Space'&&cur&&cur.run.status==='running'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){ e.preventDefault(); $('btnLap').click(); } });
 try{ $('hdrLogo').src='data:image/jpeg;base64,'+LOGO_B64; $('hdrLogo').hidden=false; }catch(e){}
 renderAll();
