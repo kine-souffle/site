@@ -201,7 +201,7 @@ body.testing header{display:none}
     <div class="panel">
       <h2>Concentrateur</h2>
       <div class="fields">
-        <div class="field"><label for="f-model" class="req">Modèle</label><select id="f-model" data-p="model"><option value="G5">Inogen One G5 (1 à 6)</option><option value="R6">Inogen Rove 6 (1 à 6)</option><option value="G4">Inogen One G4 (1 à 3)</option></select></div>
+        <div class="field"><label for="f-model" class="req">Modèle</label><select id="f-model" data-p="model"><option value="G3">Inogen One G3 (1 à 4)</option><option value="G3HF">Inogen One G3 HF (1 à 5)</option><option value="G5">Inogen One G5 (1 à 6)</option><option value="R6">Inogen Rove 6 (1 à 6)</option><option value="G4">Inogen One G4 (1 à 3)</option></select></div>
         <div class="field"><label for="f-rest">Réglage au repos</label><select id="f-rest" data-p="rest"></select></div>
         <div class="field"><label for="f-carry">Portage pendant le test</label><select id="f-carry" data-p="carry"><option>Sac à dos</option><option>Bandoulière</option><option>Chariot</option><option>Porté par le kiné</option></select></div>
         <div class="field"><label for="f-aid">Aide technique</label><select id="f-aid" data-p="aid"><option>Aucune</option><option>Canne</option><option>Rollator</option><option>Déambulateur</option></select></div>
@@ -1655,8 +1655,8 @@ return {QRCode:M["index"],L:M["QRErrorCorrectLevel"]};})();
    stabilisation puis 2 min à SpO2 ≥ 90 %) → récupération → marche de contrôle de 6 min au réglage trouvé → compte rendu.
    Les seuils sont regroupés ici pour pouvoir être changés. */
 const SEUIL=90, LOW_MS=30000, STAB_MS=60000, HOLD_MS=120000, DUR=360000;
-const CRAN_ML=210;   // Inogen : 210 mL/min d'O2 par cran (manuel technique G5) ; bolus = 210 × réglage / FR
-const MODELS={G5:{name:'Inogen One G5',max:6},R6:{name:'Inogen Rove 6',max:6},G4:{name:'Inogen One G4',max:3}};
+const CRAN_ML=210;   // Inogen : 210 mL/min d'O2 par cran (manuels techniques G3 et G5) ; bolus = 210 × réglage / FR
+const MODELS={G3:{name:'Inogen One G3',max:4},G3HF:{name:'Inogen One G3 HF',max:5},G5:{name:'Inogen One G5',max:6},R6:{name:'Inogen Rove 6',max:6},G4:{name:'Inogen One G4',max:3}};
 const LOCAL='titro2-cur', HIST='titro2-hist', LAST='titro2-last';
 const BORG=[[0,'Rien'],[0.5,'Très très légère'],[1,'Très légère'],[2,'Légère'],[3,'Modérée'],[4,'Un peu forte'],[5,'Forte'],[6,''],[7,'Très forte'],[8,''],[9,'Très très forte'],[10,'Maximale']];
 const PROMPTS={1:'Vous vous débrouillez bien. Il vous reste 5 minutes.',2:'Continuez comme ça. Il vous reste 4 minutes.',3:'Vous vous débrouillez bien. Vous êtes à la moitié.',4:'Continuez comme ça. Il ne vous reste que 2 minutes.',5:'Vous vous débrouillez bien. Il ne vous reste qu’une minute.'};
@@ -1673,11 +1673,11 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 const lsGet=k=>{ try{ const r=localStorage.getItem(k); return r?JSON.parse(r):null; }catch(e){ return null; } };
 const lsSet=(k,v)=>{ try{ v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
 
-const model=r=>MODELS[r.patient.model]||MODELS.G5;
+const model=r=>MODELS[r.patient.model]||MODELS.G3;
 const maxSet=r=>model(r).max;
 const restSet=r=>num(r.patient.rest)||0;
 const defStart=r=>Math.min(maxSet(r),restSet(r)?restSet(r)+1:2);
-function blankPatient(){ const l=lsGet(LAST)||{}; return {ini:'',eval:'Éval 1',date:today(),age:'',prescr:'',model:l.model||'G5',rest:'0',carry:l.carry||'Sac à dos',aid:'Aucune',len:l.len||30,rdist:'',rspmin:'',rsprest:'',rborg:''}; }
+function blankPatient(){ const l=lsGet(LAST)||{}; return {ini:'',eval:'Éval 1',date:today(),age:'',prescr:'',model:l.model||'G3',rest:'0',carry:l.carry||'Sac à dos',aid:'Aucune',len:l.len||30,rdist:'',rspmin:'',rsprest:'',rborg:''}; }
 function newRecord(p){ const now=Date.now(); const r={id:'o'+now.toString(36),createdAt:now,patient:p,stage:'prep',startSet:null,
   vit:{},borg:{rest:{d:null,f:null},tend:{d:null},cend:{d:null,f:null}},
   titr:{start:null,end:null,meas:[],laps:[],steps:[],result:'',stopReason:'',found:null},
@@ -2013,7 +2013,7 @@ function readDpiLink(){
   return Object.keys(o).length?o:null;
 }
 let dpiPre=readDpiLink();
-function fillRestOptions(){ const mx=(MODELS[form.model]||MODELS.G5).max, el=$('f-rest'), v=String(Math.min(num(form.rest)||0,mx));
+function fillRestOptions(){ const mx=(MODELS[form.model]||MODELS.G3).max, el=$('f-rest'), v=String(Math.min(num(form.rest)||0,mx));
   el.innerHTML='<option value="0">Air (pas d\'O2 au repos)</option>'+Array.from({length:mx},(_,i)=>`<option value="${i+1}">Réglage ${i+1}</option>`).join(''); el.value=v; form.rest=v; }
 function fillForm(){ fillRestOptions(); PKEYS.forEach(k=>{ const el=document.querySelector('[data-p="'+k+'"]'); if(el) el.value=form[k]??''; }); }
 function applyPre(){ if(!dpiPre) return; Object.assign(form,dpiPre); fillForm();
