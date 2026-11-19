@@ -63,7 +63,7 @@ button.big{width:100%;padding:16px;font-size:19px;border-radius:12px}
 .vit input{font-family:var(--f-display);font-weight:600;font-size:30px;padding:6px 10px;text-align:center}
 input.bad{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
 input.warnv{background:var(--warn-soft);border-color:var(--warn)}
-input.missing{border-color:var(--bad)}
+input.missing,select.missing{border-color:var(--bad)}
 .borg{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
 .borg button{padding:5px 2px;display:flex;flex-direction:column;align-items:center;font-weight:400;min-height:50px;border-radius:8px}
 .borg .bv{font-family:var(--f-display);font-weight:700;font-size:21px;line-height:1.05}
@@ -107,6 +107,17 @@ input.missing{border-color:var(--bad)}
 .mchip b{color:var(--accent)}
 .mchip .lo{color:var(--bad);font-weight:700}
 .mchip button{border:none;background:transparent;padding:2px 6px;font-size:14px;color:var(--muted)}
+.mchip button.mval{color:inherit;font:inherit;padding:0;font-variant-numeric:tabular-nums}
+.mchip.editing{border-color:var(--accent);background:var(--accent-soft)}
+.medit{display:flex;flex-direction:column;gap:6px}
+.mrowe{display:grid;grid-template-columns:52px 1fr 1fr 40px;gap:8px;align-items:center}
+.mrowe b{color:var(--accent);font-variant-numeric:tabular-nums}
+.mrowe input{font-family:var(--f-display);font-weight:600;font-size:22px;padding:5px 6px;text-align:center}
+.mrowe.head{font-size:12px;color:var(--muted);text-align:center}
+.mrowe.corr b::after{content:' *';color:var(--warn)}
+.mrowe button{padding:6px 0}
+.madd{display:grid;grid-template-columns:64px 1fr 1fr auto;gap:8px;align-items:center}
+.madd input{text-align:center}
 .mpills{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
 .mpills button{padding:6px 0;font-family:var(--f-display);font-size:18px;border-radius:8px}
 .mpills button.has{border-color:var(--accent);color:var(--accent)}
@@ -158,18 +169,20 @@ body.testing header{display:none}
     <div class="panel">
       <h2>Patient</h2>
       <div class="fields">
+        <div class="field" style="grid-column:1/-1"><label for="f-nom">NOM Prénom (compte rendu)</label><input id="f-nom" maxlength="60" autocomplete="off" placeholder="DURAND Marie" data-p="nom"></div>
         <div class="field"><label for="f-ini" class="req">Initiales</label><input id="f-ini" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="Nom puis prénom" data-p="ini"></div>
-        <div class="field"><label for="f-eval" class="req">Évaluation</label><select id="f-eval" data-p="eval"><option>Éval 1</option><option>Éval 2</option><option>Éval 3</option><option>Éval 4</option></select></div>
+        <div class="field"><label for="f-eval" class="req">Évaluation</label><select id="f-eval" data-p="eval"><option>Éval 1</option><option>Éval 2</option><option>Éval 3</option><option>Éval 4</option><option>Éval 5</option></select></div>
         <div class="field"><label for="f-date">Date</label><input id="f-date" type="date" data-p="date"></div>
         <div class="field"><label for="f-sex">Sexe</label><select id="f-sex" data-p="sex"><option value="">—</option><option value="H">Homme</option><option value="F">Femme</option></select></div>
         <div class="field"><label for="f-age">Âge (ans)</label><input id="f-age" type="number" inputmode="numeric" data-p="age"></div>
         <div class="field"><label for="f-ht">Taille (cm)</label><input id="f-ht" type="number" inputmode="numeric" data-p="ht"></div>
         <div class="field"><label for="f-wt">Poids (kg)</label><input id="f-wt" type="number" inputmode="decimal" step="0.1" data-p="wt"></div>
-        <div class="field"><label for="f-o2">O2 (L/min, vide = AA)</label><input id="f-o2" type="number" inputmode="decimal" step="0.5" data-p="o2"></div>
+        <div class="field"><label for="f-o2">O2 (L/min ou réglage, vide = AA)</label><input id="f-o2" type="number" inputmode="decimal" step="0.5" data-p="o2"></div>
+        <div class="field"><label for="f-o2t">Type d'O2 (si sous O2)</label><select id="f-o2t" data-p="o2t"><option value="">—</option><option value="P">INOGEN / air pulsé</option><option value="C">O2 liquide / débit continu</option></select></div>
         <div class="field"><label for="f-aid">Aide technique</label><select id="f-aid" data-p="aid"><option>Aucune</option><option>Canne</option><option>Rollator</option><option>Déambulateur</option></select></div>
         <div class="field"><label for="f-len">Longueur du tour (m)</label><input id="f-len" type="number" inputmode="numeric" data-p="len"></div>
       </div>
-      <div class="note">Initiales dans l'ordre nom puis prénom (Durand Marie = DM), comme dans le DPI. Âge, sexe, taille et poids servent au % théorique du compte rendu (même règle que le DPI).</div>
+      <div class="note">Le NOM Prénom apparaît en tête du compte rendu ; les initiales (nom puis prénom, Durand Marie = DM) servent au nom des fichiers, comme dans le DPI. Sous O2 : préciser le type, INOGEN (ou équivalent en air pulsé, débit = réglage) ou O2 liquide (ou équivalent en débit continu, L/min). Âge, sexe, taille et poids servent au % théorique du compte rendu (même règle que le DPI).</div>
     </div>
     <button type="button" class="big primary" id="btnBegin">Continuer</button>
     <div class="panel" id="histPanel" hidden>
@@ -245,6 +258,13 @@ body.testing header{display:none}
         <div class="stepper"><button type="button" id="lapMinus" aria-label="Retirer un tour">−</button><input id="endLaps" type="number" readonly aria-label="Tours"><button type="button" id="lapPlus" aria-label="Ajouter un tour">+</button></div></div>
       <div class="field"><label for="extra">Mètres sur le dernier tour incomplet</label>
         <div class="stepper"><button type="button" id="exMinus" aria-label="Moins 1 m">−</button><input id="extra" type="number" inputmode="numeric" data-f="extra"><button type="button" id="exPlus" aria-label="Plus 1 m">+</button></div></div>
+    </div>
+    <div class="panel">
+      <h2>Mesures pendant le test</h2>
+      <span class="note">Corriger ici une valeur douteuse (doigts froids, signal instable…) avant d’enregistrer. Les valeurs corrigées sont signalées par * et listées dans les commentaires du compte rendu.</span>
+      <div class="medit" id="mEdit"></div>
+      <div class="madd"><input id="addT" type="text" inputmode="decimal" placeholder="m:ss" aria-label="Temps de la mesure à ajouter (m:ss)"><input id="addFc" type="number" inputmode="numeric" placeholder="FC" aria-label="FC"><input id="addSp" type="number" inputmode="numeric" placeholder="SpO2" aria-label="SpO2"><button type="button" id="btnAddM">Ajouter</button></div>
+      <span class="status" id="addStatus" aria-live="polite"></span>
     </div>
     <div class="panel">
       <h2>Fin de test</h2>
@@ -1551,7 +1571,7 @@ return {QRCode:M["index"],L:M["QRErrorCorrectLevel"]};})();
 const DUR=360000, LOCAL='tdm6s-cur', HIST='tdm6s-hist', LAST='tdm6s-last';
 const BORG=[[0,'Rien'],[0.5,'Très très légère'],[1,'Très légère'],[2,'Légère'],[3,'Modérée'],[4,'Un peu forte'],[5,'Forte'],[6,''],[7,'Très forte'],[8,''],[9,'Très très forte'],[10,'Maximale']];
 const PROMPTS={1:'Vous vous débrouillez bien. Il vous reste 5 minutes.',2:'Continuez comme ça. Il vous reste 4 minutes.',3:'Vous vous débrouillez bien. Vous êtes à la moitié.',4:'Continuez comme ça. Il ne vous reste que 2 minutes.',5:'Vous vous débrouillez bien. Il ne vous reste qu’une minute.'};
-const PKEYS=['ini','eval','date','sex','age','ht','wt','o2','aid','len'];
+const PKEYS=['nom','ini','eval','date','sex','age','ht','wt','o2','o2t','aid','len'];
 
 const $=id=>document.getElementById(id);
 const num=v=>{ if(v===''||v==null) return null; const n=Number(String(v).replace(',','.')); return isFinite(n)?n:null; };
@@ -1564,7 +1584,13 @@ const clone=o=>JSON.parse(JSON.stringify(o));
 const lsGet=k=>{ try{ const r=localStorage.getItem(k); return r?JSON.parse(r):null; }catch(e){ return null; } };
 const lsSet=(k,v)=>{ try{ v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
 
-function blankPatient(){ const l=lsGet(LAST)||{}; return {ini:'',eval:'Éval 1',date:today(),sex:'',age:'',ht:'',wt:'',o2:'',aid:'Aucune',len:l.len||30}; }
+function blankPatient(){ const l=lsGet(LAST)||{}; return {nom:'',ini:'',eval:'Éval 1',date:today(),sex:'',age:'',ht:'',wt:'',o2:'',o2t:'',aid:'Aucune',len:l.len||30}; }
+// type d'O2 : P = INOGEN (ou équivalent air pulsé, débit = réglage), C = O2 liquide (ou équivalent débit continu, L/min)
+const O2T={P:{dpi:'Sous O2 INOGEN / air pulsé',lib:'INOGEN (air pulsé)',court:'INOGEN'},C:{dpi:'Sous O2 liquide / débit continu',lib:'liquide (débit continu)',court:'O2 liquide'}};
+function o2Texte(p){ const o2=num(p.o2); if(!o2) return 'Air ambiant'; const t=O2T[p.o2t];
+  return t?'Sous O2 '+t.lib+(p.o2t==='P'?', réglage '+frn1(o2):' '+frn1(o2)+' L/min'):'Sous O2 '+frn1(o2)+' L/min'; }
+const quiEst=p=>p.nom||p.ini||'Patient';
+function initialesDe(nom){ const m=String(nom||'').trim().split(/\s+/).filter(Boolean); return m.length?(m[0][0]+(m[1]?m[1][0]:'')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase():''; }
 function newRecord(p){ const now=Date.now(); return {id:'t'+now.toString(36),createdAt:now,patient:p,
   run:{status:'idle',start:null,end:null,laps:[],rests:[],restOpen:null,extra:0,stopReason:''},
   vit:{},meas:[],pending:null,borg:{rest:{d:null,f:null},end:{d:null,f:null}},notes:'',saved:false}; }
@@ -1679,15 +1705,16 @@ function dpiValues(r){
   if(p.aid&&p.aid!=='Aucune') com.push('Aide : '+p.aid);
   if(u.stopReason) com.push('Arrêt prématuré ('+u.stopReason+') à '+mmss(c.dur||0));
   if(u.rests.length) com.push('Arrêts : '+u.rests.map(([a,b])=>mmss(a)+' ('+Math.round((b-a)/1000)+' s)').join(', '));
+  const cor=corrections(r); if(cor.length) com.push('Corrigé manuellement : '+cor.join(' ; '));
   if(r.notes) com.push(r.notes);
-  return [['Conditions',o2?'Sous O2':'Air ambiant'],["Débit d'O2 (L/min)",o2?frn1(o2):''],['FC de repos (bpm)',c.fcR],['SpO2 de repos (%)',c.spR],
+  return [['Conditions',o2?(O2T[p.o2t]?O2T[p.o2t].dpi:'Sous O2'):'Air ambiant'],[O2T[p.o2t]&&p.o2t==='P'?"Débit d'O2 (réglage INOGEN)":"Débit d'O2 (L/min)",o2?frn1(o2):''],['FC de repos (bpm)',c.fcR],['SpO2 de repos (%)',c.spR],
     ['Dyspnée de repos (Borg)',frn1(r.borg.rest.d)],['Distance parcourue (m)',c.dist],['FC maximale (bpm)',c.fcPk],['SpO2 minimale (%)',c.spMin],
     ['Dyspnée fin de test (Borg)',frn1(r.borg.end.d)],['Fatigue MI fin de test (Borg)',frn1(r.borg.end.f)],["Nombre d'arrêts",u.rests.length],
     ['Commentaires',com.join(' · ')]].map(([k,v])=>[k,v==null||v===''?'–':String(v)]);
 }
 
 /* graphique FC / SpO2 du compte rendu : repos à 0, mesures à leur temps, fin de test, récupération */
-const C_FC='#c2410c', C_SP='#1d4ed8';
+const C_FC='#c2410c', C_SP='#1d4ed8', C_PAUSE='#fbe3c4';
 function drawChart(D,r,x,y,w,h){
   const c=compute(r), M=measOf(r), dur=c.dur!=null?c.dur:360000;
   const pts=[]; // [t, fc, sp, type]
@@ -1708,6 +1735,10 @@ function drawChart(D,r,x,y,w,h){
   const px=t=>x+t/tmax*w, pyF=v=>y+h-(v-fLo)/(fHi-fLo)*h, pyS=v=>y+h-(v-sLo)/(sHi-sLo)*h;
   // zone de récupération
   if(hasRec&&tmax>dur){ D.rect(px(dur),y,px(tmax)-px(dur),h,{fill:'#eef2f1'}); D.text((px(dur)+px(tmax))/2,y+3.5,'Récupération',{size:7,color:C_MUT,align:'center'}); }
+  // zones de pause (arrêts pendant le test)
+  (r.run.rests||[]).forEach(([a,b])=>{ a=Math.max(0,Math.min(a,dur)); b=Math.max(a,Math.min(b==null?dur:b,dur)); if(b<=a) return;
+    const x1=px(a), wz=Math.max(px(b)-x1,0.8); D.rect(x1,y,wz,h,{fill:C_PAUSE});
+    D.text(x1+wz/2,y+3.5,'Pause',{size:6.5,color:'#9a5a12',align:'center'}); });
   // grille horizontale (graduations FC)
   for(let v=fLo;v<=fHi;v+=fStep){ D.line(x,pyF(v),x+w,pyF(v),{color:'#e3e9e7',lw:0.4}); D.text(x-1.5,pyF(v)+1,String(v),{size:7,color:C_FC,align:'right'}); }
   // graduations SpO2 (axe droit)
@@ -1743,14 +1774,15 @@ function layoutReport(r,LV){
   if(lg) D.image(lg,X0,y,lw,lh);
   const tx0=X0+(lg?lw+6:0);
   D.text(tx0,y+9,'Test de marche de 6 minutes',{size:17,bold:true,color:C_ACC});
-  D.text(tx0,y+15,'Compte rendu de passation',{size:10,color:C_MUT});
-  D.text(X1,y+9,(p.ini||'Patient')+' · '+p.eval,{size:14,bold:true,align:'right'});
+  { const who=quiEst(p)+' · '+p.eval, place=X1-tx0-100; let sz=14; while(sz>11&&D.wrap(who,place,sz,true).length>1) sz--;
+    if(D.wrap(who,place,sz,true).length===1) D.text(X1,y+9,who,{size:sz,bold:true,align:'right'});
+    else { D.text(X1,y+9,p.eval,{size:14,bold:true,align:'right'}); D.text(tx0,y+16,quiEst(p),{size:13,bold:true}); } }   // nom trop long : sous le titre
   D.text(X1,y+15,'Test du '+dateFr(p.date)+(u.start?' à '+hhmm(u.start):''),{size:10,color:C_MUT,align:'right'});
   y+=lh+2;
   D.line(X0,y,X1,y,{color:C_ACC,lw:1.2});
   y+=5.5;
   // conditions
-  const cond=[o2?'Sous O2 '+frn1(o2)+' L/min':'Air ambiant','Aide : '+(p.aid||'Aucune'),'Couloir de '+L+' m',
+  const cond=[o2Texte(p),'Aide : '+(p.aid||'Aucune'),'Couloir de '+L+' m',
     p.sex?(p.sex==='H'?'Homme':'Femme'):'',p.age?p.age+' ans':'',p.ht?p.ht+' cm':'',p.wt?frn1(p.wt)+' kg':''].filter(Boolean).join('   ·   ');
   D.text(X0,y,cond,{size:9.5,color:C_MUT});
   y+=4;
@@ -1783,7 +1815,7 @@ function layoutReport(r,LV){
   y+=3;
   const M=measOf(r), endT=c.dur!=null?c.dur:360000;
   const rows=[['Repos',vitOf(r,'rest','fc'),vitOf(r,'rest','sp'),'']]
-    .concat(M.map(m=>[mmss(m.t),num(m.fc),num(m.sp),String(distAt(r,m.t))]))
+    .concat(M.map(m=>[mmss(m.t),num(m.fc),num(m.sp),String(distAt(r,m.t)),isCorr(m,'fc'),isCorr(m,'sp')]))
     .concat([['Fin ('+mmss(endT)+')',vitOf(r,'6','fc'),vitOf(r,'6','sp'),String(c.dist)],
              ['Récup. 1 min',vitOf(r,'r1','fc'),vitOf(r,'r1','sp'),''],['Récup. 3 min',vitOf(r,'r3','fc'),vitOf(r,'r3','sp'),'']]);
   // au-delà de 14 lignes, le tableau passe sur deux colonnes côte à côte
@@ -1795,11 +1827,11 @@ function layoutReport(r,LV){
     const sx=tx+pi*(subW+3), cc=split?[0,15,27,39,subW]:cols;
     D.rect(sx,y,subW,rh,{fill:C_HEAD});
     (split?['Temps','FC','SpO2','Dist.']:['Temps','FC (bpm)','SpO2 (%)','Distance (m)']).forEach((h,i)=>D.text(sx+(cc[i]+cc[i+1])/2,y+ty0,h,{size:Math.min(8.5,fsz),bold:true,align:'center'}));
-    sub.forEach(([lab,fc,sp,dist],j)=>{ const i=off+j, yy=y+rh*(j+1), during=i>0&&i<=M.length+1;
+    sub.forEach(([lab,fc,sp,dist,cf,cs],j)=>{ const i=off+j, yy=y+rh*(j+1), during=i>0&&i<=M.length+1;
       if(j%2) D.rect(sx,yy,subW,rh,{fill:'#f3f6f5'});
       D.text(sx+(split?1.5:3),yy+ty0,split?lab.replace('Récup. ','R. ').replace('Fin (','Fin ('):lab,{size:fsz,bold:i===M.length+1});
-      D.text(sx+(cc[1]+cc[2])/2,yy+ty0,fc==null?'–':String(fc),{size:fsz,align:'center',bold:during&&fc!=null&&fc===c.fcPk});
-      D.text(sx+(cc[2]+cc[3])/2,yy+ty0,sp==null?'–':String(sp),{size:fsz,align:'center',bold:sp!=null&&sp<88,color:sp!=null&&sp<88?C_BAD:'#17211f'});
+      D.text(sx+(cc[1]+cc[2])/2,yy+ty0,(fc==null?'–':String(fc))+(cf?'*':''),{size:fsz,align:'center',bold:during&&fc!=null&&fc===c.fcPk});
+      D.text(sx+(cc[2]+cc[3])/2,yy+ty0,(sp==null?'–':String(sp))+(cs?'*':''),{size:fsz,align:'center',bold:sp!=null&&sp<88,color:sp!=null&&sp<88?C_BAD:'#17211f'});
       D.text(sx+(cc[3]+cc[4])/2,yy+ty0,dist,{size:fsz,align:'center',color:C_MUT}); });
     D.rect(sx,y,subW,rh*(nPer+1),{stroke:C_LINE});
   });
@@ -1844,7 +1876,7 @@ function layoutReport(r,LV){
   D.text(X0,289.5,'Document généré le '+dateFr(today())+' à '+hhmm(Date.now())+' par l’outil Passation TDM6. Les valeurs du DPI font foi.',{size:7,color:C_MUT});
   return D;
 }
-function reportBlob(r){ return new Blob([buildReport(r).bytes({title:'TDM6 '+(r.patient.ini||'')+' '+r.patient.eval+' '+dateFr(r.patient.date)})],{type:'application/pdf'}); }
+function reportBlob(r){ return new Blob([buildReport(r).bytes({title:'TDM6 '+quiEst(r.patient)+' '+r.patient.eval+' '+dateFr(r.patient.date)})],{type:'application/pdf'}); }
 function makeFile(r){ return new File([reportBlob(r)],fileName(r),{type:'application/pdf'}); }
 /* ---------- fichier de données Excel pour le DPI (sans bibliothèque) ----------
    Feuille « DPI » : valeurs en B21:B32, aux mêmes lignes que l'onglet TDM6 du DPI. */
@@ -1864,7 +1896,7 @@ function zipStore(files){ // [[nom, Uint8Array]] -> Uint8Array (zip sans compres
 const xesc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function dpiRaw(r){ // valeurs brutes (nombres en nombres), lignes 21 à 32 du DPI
   const p=r.patient,u=r.run,c=compute(r),o2=num(p.o2), com=dpiValues(r)[11][1];
-  return [[21,'Conditions',o2?'Sous O2':'Air ambiant'],[22,"Débit d'O2 (L/min)",o2||null],[23,'FC de repos (bpm)',c.fcR],[24,'SpO2 de repos (%)',c.spR],
+  return [[21,'Conditions',o2?(O2T[p.o2t]?O2T[p.o2t].dpi:'Sous O2'):'Air ambiant'],[22,"Débit d'O2 (L/min)",o2||null],[23,'FC de repos (bpm)',c.fcR],[24,'SpO2 de repos (%)',c.spR],
     [25,'Dyspnée de repos (Borg 0–10)',r.borg.rest.d],[26,'Distance parcourue (m)',c.dist],[27,'FC maximale atteinte (bpm)',c.fcPk],[28,'SpO2 minimale (%)',c.spMin],
     [29,'Dyspnée en fin de test (Borg 0–10)',r.borg.end.d],[30,'Fatigue des membres inférieurs (Borg 0–10)',r.borg.end.f],[31,"Nombre d'arrêts",u.rests.length],
     [32,'Commentaires',com==='–'?'':com]];
@@ -1873,7 +1905,7 @@ function dataXlsx(r){
   const p=r.patient, enc=new TextEncoder();
   const cell=(ref,v,s)=>v==null||v===''?'':(typeof v==='number'?`<c r="${ref}"${s?' s="'+s+'"':''}><v>${v}</v></c>`:`<c r="${ref}" t="inlineStr"${s?' s="'+s+'"':''}><is><t xml:space="preserve">${xesc(v)}</t></is></c>`);
   const rows=[];
-  const info=[[1,'TDM6 – données pour le DPI (ne pas modifier)',null,1],[3,'Initiales',p.ini],[4,'Évaluation',p.eval],[5,'Date du test',dateFr(p.date)],
+  const info=[[1,'TDM6 – données pour le DPI (ne pas modifier)',null,1],[2,'Patient',p.nom||''],[3,'Initiales',p.ini],[4,'Évaluation',p.eval],[5,'Date du test',dateFr(p.date)],
     [6,'Durée',compute(r).dur!=null?mmss(compute(r).dur):''],[7,'Arrêt prématuré',r.run.stopReason||'non'],
     [9,"Dans le DPI du patient : onglet TDM6 > bouton « Importer le TDM6 » > choisir ce fichier."],
     [20,'Onglet TDM6 du DPI, colonne '+p.eval,'Valeur',1]];
@@ -1908,14 +1940,17 @@ let form=blankPatient();
 function readDpiLink(){
   const h=location.hash.replace(/^#/,''); if(!h) return null;
   const q={};
-  // format court (sans « & », que Windows coupe en ouvrant le navigateur) : #tdm6_INI_EVAL_SEXE_AGE_TAILLE_POIDS_O2_AAAAMMJJ
-  if(/^tdm6_/i.test(h)){ const f=h.split('_'); ['','ini','ev','sx','age','ht','wt','o2','d'].forEach((k,i)=>{ if(k&&f[i]!=null){ let v=f[i]; try{ v=decodeURIComponent(v); }catch(e){} q[k]=v.trim(); } }); }
+  // format court (sans « & », que Windows coupe en ouvrant le navigateur) : #tdm6_INI_EVAL_SEXE_AGE_TAILLE_POIDS_O2_AAAAMMJJ_TYPEO2_NOM (TYPEO2 = P ou C ; NOM encodé, en dernier)
+  if(/^tdm6_/i.test(h)){ const f=h.split('_'); if(f.length>11) f.splice(10,f.length-10,f.slice(10).join('_')); ['','ini','ev','sx','age','ht','wt','o2','d','o2t','nom'].forEach((k,i)=>{ if(k&&f[i]!=null){ let v=f[i]; try{ v=decodeURIComponent(v); }catch(e){} q[k]=v.trim(); } }); }
   else if(h.indexOf('=')<0) return null;
   else h.split('&').forEach(kv=>{ const i=kv.indexOf('='); if(i<0) return; let v=kv.slice(i+1); try{ v=decodeURIComponent(v.replace(/\+/g,' ')); }catch(e){} q[kv.slice(0,i)]=v.trim(); });
   const dot=v=>v==null?'':String(v).replace(',','.').replace(/[^0-9.]/g,'');
   const o={};
   if(q.ini) o.ini=q.ini.toUpperCase().slice(0,6);
-  if(/^[1-4]$/.test(q.ev||'')) o.eval='Éval '+q.ev;
+  if(q.nom) o.nom=q.nom.replace(/\s+/g,' ').slice(0,60);
+  if(!o.ini&&o.nom) o.ini=initialesDe(o.nom);
+  const t=(q.o2t||'').toUpperCase()[0]; if(t==='P'||t==='C') o.o2t=t;
+  if(/^[1-5]$/.test(q.ev||'')) o.eval='Éval '+q.ev;
   const sx=(q.sx||'').toUpperCase()[0]; if(sx==='H'||sx==='F') o.sex=sx;
   if(dot(q.age)) o.age=String(Math.round(+dot(q.age)));
   if(dot(q.ht)) o.ht=dot(q.ht);
@@ -1929,7 +1964,7 @@ function readDpiLink(){
 let dpiPre=readDpiLink();
 function applyPre(){ if(!dpiPre) return; Object.assign(form,dpiPre); fillForm();
   const b=$('dpiBanner'); b.hidden=false;
-  b.innerHTML='<b>Données reprises du DPI</b> : '+esc([dpiPre.ini,dpiPre.eval,dpiPre.sex==='H'?'Homme':dpiPre.sex==='F'?'Femme':'',dpiPre.age&&dpiPre.age+' ans',dpiPre.ht&&dpiPre.ht+' cm',dpiPre.wt&&dpiPre.wt.replace('.',',')+' kg',dpiPre.o2?dpiPre.o2.replace('.',',')+' L/min O2':''].filter(Boolean).join(' · '))+'. Vérifiez puis touchez Continuer.'; }
+  b.innerHTML='<b>Données reprises du DPI</b> : '+esc([dpiPre.nom||dpiPre.ini,dpiPre.eval,dpiPre.sex==='H'?'Homme':dpiPre.sex==='F'?'Femme':'',dpiPre.age&&dpiPre.age+' ans',dpiPre.ht&&dpiPre.ht+' cm',dpiPre.wt&&dpiPre.wt.replace('.',',')+' kg',dpiPre.o2?o2Texte(dpiPre):''].filter(Boolean).join(' · '))+'. Vérifiez puis touchez Continuer.'; }
 function drawQR(text){
   try{ const q=new QRLIB.QRCode(-1,QRLIB.L.M); q.addData(text); q.make();
     const n=q.getModuleCount(), cv=$('qrCanvas'), sc=Math.floor(220/(n+8)), size=sc*(n+8); cv.width=size; cv.height=size;
@@ -1963,6 +1998,9 @@ document.addEventListener('input',e=>{
   const el=e.target;
   if(el.dataset.p){ form[el.dataset.p]=el.value; el.classList.remove('missing'); return; }
   if(!cur) return;
+  if(el.dataset.me){ const [t,k]=el.dataset.me.split(':'), m=ensureMeas().find(x=>x.t===+t); if(!m) return;
+    setMeasVal(m,k,num(el.value)); el.closest('.mrowe').classList.toggle('corr',!!(m.add||m.o));
+    if(k==='sp') el.classList.toggle('bad',m.sp!=null&&m.sp<88); changed(); renderEndResults(); return; }
   if(el.dataset.vit){ const [k,t]=el.dataset.vit.split(':'); cur.vit[k]=cur.vit[k]||{}; cur.vit[k][t]=el.value; changed(); flagInput(el); renderEndResults(); return; }
   if(el.dataset.f==='extra'){ cur.run.extra=el.value; changed(); renderEndResults(); }
   if(el.dataset.f==='notes'){ cur.notes=el.value; changed(); }
@@ -1990,17 +2028,20 @@ $('btnSound').textContent='Bip : '+(sound?'oui':'non');
 function screen(){ if(!cur) return 'home'; const s=cur.run.status; return s==='idle'?'prep':s==='running'?'test':'end'; }
 $('btnBegin').onclick=()=>{
   let ok=true;
+  if(!String(form.ini).trim()&&String(form.nom||'').trim()){ form.ini=initialesDe(form.nom); $('f-ini').value=form.ini; }
   if(!String(form.ini).trim()){ $('f-ini').classList.add('missing'); ok=false; }
-  if(!ok){ $('f-ini').focus(); return; }
+  if(num(form.o2)&&!form.o2t){ $('f-o2t').classList.add('missing'); if(ok) $('f-o2t').focus(); ok=false; }
+  if(!ok){ if(!String(form.ini).trim()) $('f-ini').focus(); return; }
+  form.nom=String(form.nom||'').trim().replace(/\s+/g,' ');
   form.ini=String(form.ini).trim().toUpperCase();
   lsSet(LAST,{len:form.len});
   cur=newRecord(clone(form)); if(dpiPre) cur.fromDpi=true; $('qrPanel').hidden=true; persist(); renderAll(); window.scrollTo(0,0);
 };
 $('btnPrepBack').onclick=()=>{ form=clone(cur.patient); cur=null; lsSet(LOCAL,null); fillForm(); renderAll(); };
 function renderPrepHead(){ if(!cur) return; const p=cur.patient;
-  $('prepWho').textContent=(p.ini||'Patient')+' · '+p.eval;
-  $('prepLine').textContent=[p.date&&p.date.split('-').reverse().join('/'),p.sex,p.age&&p.age+' ans',p.ht&&p.ht+' cm',p.wt&&p.wt+' kg',num(p.o2)?p.o2+' L/min O2':'AA',p.aid!=='Aucune'?p.aid:'','tour '+lapLen(cur)+' m'].filter(Boolean).join(' · ');
-  $('testWho').textContent=(p.ini||'Patient')+' · '+p.eval; }
+  $('prepWho').textContent=quiEst(p)+' · '+p.eval;
+  $('prepLine').textContent=[p.date&&p.date.split('-').reverse().join('/'),p.sex,p.age&&p.age+' ans',p.ht&&p.ht+' cm',p.wt&&p.wt+' kg',num(p.o2)?o2Texte(p):'AA',p.aid!=='Aucune'?p.aid:'','tour '+lapLen(cur)+' m'].filter(Boolean).join(' · ');
+  $('testWho').textContent=quiEst(p)+' · '+p.eval; }
 
 /* ---------- test ---------- */
 let lastMinute=0, warned15=false, lastRecupBeep=0;
@@ -2037,18 +2078,46 @@ $('t-fc').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(
 $('t-sp').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); commitMeas(); } });
 $('btnMeas').onclick=()=>commitMeas();
 function commitMeas(){ if(!cur||!cur.pending) return; const p=cur.pending, fc=num(p.fc), sp=num(p.sp);
-  if(fc!=null||sp!=null){ cur.meas=cur.meas||[]; cur.meas.push({t:p.t,fc,sp}); beep(1200,.06); }
+  if(fc!=null||sp!=null){ cur.meas=cur.meas||[];
+    const m=p.edit?ensureMeas().find(x=>x.t===p.t):null;
+    if(m){ setMeasVal(m,'fc',fc); setMeasVal(m,'sp',sp); } else cur.meas.push({t:p.t,fc,sp});
+    beep(1200,.06); }
   cur.pending=null; $('t-fc').value=''; $('t-sp').value=''; flagMeas(); persist(); renderMeas(); }
 function restorePending(){ if(!cur) return; const p=cur.pending; $('t-fc').value=p?p.fc??'':''; $('t-sp').value=p?p.sp??'':''; flagMeas(); }
 function renderMeas(){ if(!cur) return;
   const p=cur.pending;
   $('mCard').classList.toggle('pending',!!p);
-  $('mLabel').textContent=p?'Mesure à '+mmss(p.t)+' · à enregistrer':'Mesure (temps pris au 1er chiffre)';
+  $('mLabel').textContent=p?(p.edit?'Correction de la mesure à '+mmss(p.t)+' · effacer pour annuler':'Mesure à '+mmss(p.t)+' · à enregistrer'):'Mesure (temps pris au 1er chiffre)';
   $('btnMeas').disabled=!p;
   const M=measOf(cur);
-  $('mLog').innerHTML=M.length?M.map((m,i)=>`<span class="mchip"><b>${mmss(m.t)}</b> ${m.fc??'–'} / <span class="${m.sp!=null&&m.sp<88?'lo':''}">${m.sp??'–'}</span><button type="button" data-delm="${m.t}" aria-label="Supprimer la mesure de ${mmss(m.t)}">✕</button></span>`).join(''):'<span class="note">Aucune mesure pour l\u2019instant.</span>'; }
-$('mLog').addEventListener('click',e=>{ const b=e.target.closest('[data-delm]'); if(!b||!cur) return; const t=+b.dataset.delm;
-  cur.meas=(cur.meas||[]).filter(m=>m.t!==t); persist(); renderMeas(); });
+  $('mLog').innerHTML=M.length?M.map((m,i)=>`<span class="mchip${p&&p.edit&&p.t===m.t?' editing':''}"><button type="button" class="mval" data-edm="${m.t}" aria-label="Corriger la mesure de ${mmss(m.t)}"><b>${mmss(m.t)}</b> ${m.fc??'–'}${isCorr(m,'fc')?'*':''} / <span class="${m.sp!=null&&m.sp<88?'lo':''}">${m.sp??'–'}${isCorr(m,'sp')?'*':''}</span></button><button type="button" data-delm="${m.t}" aria-label="Supprimer la mesure de ${mmss(m.t)}">✕</button></span>`).join('')+'<span class="note" style="width:100%">Toucher une mesure pour la corriger.</span>':'<span class="note">Aucune mesure pour l\u2019instant.</span>'; }
+$('mLog').addEventListener('click',e=>{ if(!cur) return;
+  const ed=e.target.closest('[data-edm]');
+  if(ed){ const t=+ed.dataset.edm, m=measOf(cur).find(x=>x.t===t); if(!m) return;
+    cur.pending={t,fc:m.fc??'',sp:m.sp??'',edit:true}; restorePending(); persist(); renderMeas(); $('t-sp').focus(); return; }
+  const b=e.target.closest('[data-delm]'); if(!b) return; const t=+b.dataset.delm;
+  if(cur.pending&&cur.pending.edit&&cur.pending.t===t){ cur.pending=null; restorePending(); }
+  cur.meas=ensureMeas().filter(m=>m.t!==t); persist(); renderMeas(); });
+
+/* correction manuelle des mesures (doigts froids, signal douteux…) : la valeur d'origine est gardée dans m.o */
+function ensureMeas(){ if(!Array.isArray(cur.meas)||!cur.meas.length){ cur.meas=measOf(cur).map(m=>({...m})); ['1','2','3','4','5'].forEach(k=>delete cur.vit[k]); } return cur.meas; }
+function setMeasVal(m,k,v){ if(m.add){ m[k]=v; return; } if(!m.o) m.o={fc:m.fc,sp:m.sp}; m[k]=v; if(m.o.fc===m.fc&&m.o.sp===m.sp) delete m.o; }
+function isCorr(m,k){ return m.add?m[k]!=null:!!(m.o&&m.o[k]!==m[k]); }
+function corrections(r){ return measOf(r).filter(m=>m.add||m.o).map(m=>mmss(m.t)+(m.add?' ajoutée':' '+[['fc','FC'],['sp','SpO2']].filter(([k])=>m.o[k]!==m[k]).map(([k,l])=>l+' '+(m.o[k]??'–')+' → '+(m[k]??'–')).join(', '))); }
+function renderMeasEdit(){ if(!cur) return; const M=measOf(cur);
+  $('mEdit').innerHTML=M.length?'<div class="mrowe head"><span>Temps</span><span>FC (bpm)</span><span>SpO2 (%)</span><span></span></div>'+M.map(m=>`<div class="mrowe${m.add||m.o?' corr':''}"><b>${mmss(m.t)}</b><input type="number" inputmode="numeric" data-me="${m.t}:fc" value="${m.fc??''}" aria-label="FC à ${mmss(m.t)}"><input type="number" inputmode="numeric" data-me="${m.t}:sp" value="${m.sp??''}" class="${m.sp!=null&&m.sp<88?'bad':''}" aria-label="SpO2 à ${mmss(m.t)}"><button type="button" class="ghost" data-delme="${m.t}" aria-label="Supprimer la mesure de ${mmss(m.t)}">✕</button></div>`).join(''):'<span class="note">Aucune mesure pendant le test.</span>'; }
+$('mEdit').addEventListener('click',e=>{ const b=e.target.closest('[data-delme]'); if(!b||!cur) return; const t=+b.dataset.delme;
+  cur.meas=ensureMeas().filter(m=>m.t!==t); changed(); renderMeasEdit(); renderEndResults(); });
+function parseT(s){ s=String(s||'').trim().replace(/[.,h']/,':'); let m=s.match(/^(\d{1,2}):(\d{1,2})$/);
+  if(m) return (+m[1]*60+ +m[2])*1000; m=s.match(/^\d{1,3}$/); if(!m) return null;
+  return s.length>=3?(+s.slice(0,-2)*60+ +s.slice(-2))*1000:+s*60000; }
+$('btnAddM').onclick=()=>{ if(!cur) return; const t=parseT($('addT').value), fc=num($('addFc').value), sp=num($('addSp').value), end=cur.run.end-cur.run.start;
+  if(t==null||t<=0||t>end){ $('addStatus').className='status warn'; $('addStatus').textContent='Temps entre 0:01 et '+mmss(end)+' (ex. 2:30).'; return; }
+  if(fc==null&&sp==null){ $('addStatus').className='status warn'; $('addStatus').textContent='Saisir la FC et/ou la SpO2.'; return; }
+  const M=ensureMeas(), old=M.find(m=>m.t===t);
+  if(old){ setMeasVal(old,'fc',fc); setMeasVal(old,'sp',sp); } else M.push({t,fc,sp,add:true});
+  $('addT').value=''; $('addFc').value=''; $('addSp').value=''; $('addStatus').textContent='';
+  changed(); renderMeasEdit(); renderEndResults(); };
 
 /* ---------- fin ---------- */
 $('lapMinus').onclick=()=>{ if(cur&&cur.run.laps.length){ cur.run.laps.pop(); changed(); renderEnd(); } };
@@ -2089,7 +2158,7 @@ $('closeNo').onclick=()=>{ $('closeBox').hidden=true; };
 $('closeYes').onclick=()=>{ $('closeBox').hidden=true; closeTest(); };
 function closeTest(){ const usedId=cur.id; saveHist(cur); unlockScreen(); const len=cur.patient.len; const wasPre=cur.fromDpi; cur=null; lsSet(LOCAL,null); form=blankPatient(); form.len=len; fillForm(); if(dpiPre&&!wasPre) applyPre(); else { dpiPre=null; $('dpiBanner').hidden=true; try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){} } $('saveStatus').textContent=''; renderAll(); window.scrollTo(0,0); }
 function renderEnd(){ if(!cur) return; $('endLen').textContent=lapLen(cur); $('endLaps').value=cur.run.laps.length;
-  $('endTitle').textContent=cur.run.stopReason?'Arrêt prématuré ('+cur.run.stopReason+')':'Fin du test'; fillInputs(); renderEndResults(); renderSave(); }
+  $('endTitle').textContent=cur.run.stopReason?'Arrêt prématuré ('+cur.run.stopReason+')':'Fin du test'; fillInputs(); renderMeasEdit(); renderEndResults(); renderSave(); }
 function renderEndResults(){ if(!cur||screen()!=='end') return; $('endResults').innerHTML=resultsHTML(cur); $('fname').textContent=fileName(cur)+' + '+dataName(cur); }
 
 /* ---------- historique ---------- */
@@ -2099,7 +2168,7 @@ function renderHist(){
   $('hist').innerHTML=hist.map(r=>{ const p=r.patient, c=compute(r);
     const del=confirmDel===r.id?`<span class="row"><button type="button" class="danger" data-delyes="${r.id}">Supprimer</button><button type="button" data-delno="1">Non</button></span>`
       :`<span class="row"><button type="button" class="primary" data-share="${r.id}">Enregistrer</button><button type="button" class="ghost" data-del="${r.id}" aria-label="Supprimer">✕</button></span>`;
-    return `<div class="hitem"><div><div class="t"><span class="dot${r.saved?' ok':''}"></span>${esc(p.ini)} · ${esc(p.eval)}</div><div class="note">${esc((p.date||'').split('-').reverse().join('/'))} · ${c.dist} m</div></div>${del}</div>`; }).join('');
+    return `<div class="hitem"><div><div class="t"><span class="dot${r.saved?' ok':''}"></span>${esc(quiEst(p))} · ${esc(p.eval)}</div><div class="note">${esc((p.date||'').split('-').reverse().join('/'))} · ${c.dist} m</div></div>${del}</div>`; }).join('');
 }
 $('hist').addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return;
   if(b.dataset.share){ const r=hist.find(x=>x.id===b.dataset.share); if(r){ const res=await shareRecord(r,null); if(res===true){ r.saved=true; lsSet(HIST,hist); renderHist(); } } }
