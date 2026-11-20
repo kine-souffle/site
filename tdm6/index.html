@@ -185,6 +185,12 @@ body.testing header{display:none}
       <div class="note">Le NOM Prénom apparaît en tête du compte rendu ; les initiales (nom puis prénom, Durand Marie = DM) servent au nom des fichiers, comme dans le DPI. Sous O2 : préciser le type, INOGEN (ou équivalent en air pulsé, débit = réglage) ou O2 liquide (ou équivalent en débit continu, L/min). Âge, sexe, taille et poids servent au % théorique du compte rendu (même règle que le DPI).</div>
     </div>
     <button type="button" class="big primary" id="btnBegin">Continuer</button>
+    <div class="panel">
+      <h2>Rouvrir un compte rendu</h2>
+      <p class="note">Choisissez le fichier <b>TDM6_….xlsx</b> enregistré dans le dossier Dropbox du patient : le test se rouvre avec la courbe et toutes les valeurs, pour corriger et réenregistrer le compte rendu.</p>
+      <label class="big" id="reopenLbl" style="display:block;text-align:center;border:1px solid var(--line);border-radius:12px;padding:14px;font-weight:700;cursor:pointer">Choisir le fichier .xlsx<input type="file" id="reopenFile" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label>
+      <span class="status" id="reopenStatus" aria-live="polite"></span>
+    </div>
     <div class="panel" id="histPanel" hidden>
       <h2>Tests récents sur ce téléphone</h2>
       <div class="hist" id="hist"></div>
@@ -1914,18 +1920,85 @@ function dataXlsx(r){
   rows.sort((a,b)=>a[0]-b[0]);
   const sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="44" customWidth="1"/><col min="2" max="2" width="60" customWidth="1"/></cols><sheetData>'+
     rows.map(([n,c])=>`<row r="${n}">${c}</row>`).join('')+'</sheetData></worksheet>';
+  // feuille « Mesures » : lisible par tous ; feuille masquée « _tdm6 » : test complet (JSON) pour rouvrir le compte rendu
+  const M=measOf(r), c2=compute(r), mrows=[];
+  const mr=(n,cells)=>mrows.push(`<row r="${n}">${cells}</row>`);
+  mr(1,cell('A1','Mesures du TDM6 – '+(p.nom||p.ini||'')+' – '+p.eval+' – '+dateFr(p.date),1));
+  mr(3,cell('A3','Temps',1)+cell('B3','FC (bpm)',1)+cell('C3','SpO2 (%)',1)+cell('D3','Distance (m)',1));
+  let n=4;
+  mr(n,cell('A'+n,'Repos')+cell('B'+n,vitOf(r,'rest','fc'))+cell('C'+n,vitOf(r,'rest','sp'))); n++;
+  M.forEach(m=>{ mr(n,cell('A'+n,mmss(m.t))+cell('B'+n,num(m.fc))+cell('C'+n,num(m.sp))+cell('D'+n,distAt(r,m.t))); n++; });
+  mr(n,cell('A'+n,'Fin'+(c2.dur!=null?' ('+mmss(c2.dur)+')':''))+cell('B'+n,vitOf(r,'6','fc'))+cell('C'+n,vitOf(r,'6','sp'))+cell('D'+n,c2.dist)); n++;
+  mr(n,cell('A'+n,'Récup. 1 min')+cell('B'+n,vitOf(r,'r1','fc'))+cell('C'+n,vitOf(r,'r1','sp'))); n++;
+  mr(n,cell('A'+n,'Récup. 3 min')+cell('B'+n,vitOf(r,'r3','fc'))+cell('C'+n,vitOf(r,'r3','sp'))); n+=2;
+  mr(n,cell('A'+n,'Tour',1)+cell('B'+n,'Temps de passage',1)+cell('C'+n,'Durée du tour (s)',1)); n++;
+  r.run.laps.forEach((t,i)=>{ mr(n,cell('A'+n,i+1)+cell('B'+n,mmss(t))+cell('C'+n,Math.round((t-(i?r.run.laps[i-1]:0))/1000))); n++; });
+  const sheetM='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="16" customWidth="1"/><col min="2" max="4" width="18" customWidth="1"/></cols><sheetData>'+mrows.join('')+'</sheetData></worksheet>';
+  const keep=clone(r); delete keep.pending; delete keep.saved; delete keep.fromDpi;
+  const json=JSON.stringify({format:'TDM6-DATA-1',record:keep}), parts=[];
+  for(let i=0;i<json.length;i+=30000) parts.push(json.slice(i,i+30000));
+  const sheetD='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+
+    ['TDM6-DATA-1 (ne pas modifier : sert à rouvrir le compte rendu sur kine-souffle.fr/tdm6)'].concat(parts).map((t,i)=>`<row r="${i+1}">${cell('A'+(i+1),t)}</row>`).join('')+'</sheetData></worksheet>';
   const files=[
-    ['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+    ['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet3.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
     ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
-    ['xl/workbook.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="DPI" sheetId="1" r:id="rId1"/></sheets></workbook>'],
-    ['xl/_rels/workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'],
+    ['xl/workbook.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="DPI" sheetId="1" r:id="rId1"/><sheet name="Mesures" sheetId="2" r:id="rId3"/><sheet name="_tdm6" sheetId="3" state="hidden" r:id="rId4"/></sheets></workbook>'],
+    ['xl/_rels/workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet3.xml"/></Relationships>'],
     ['xl/styles.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="0" fillId="2" borderId="0" xfId="0" applyFill="1" applyAlignment="1"><alignment horizontal="left" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'],
-    ['xl/worksheets/sheet1.xml',sheet]];
+    ['xl/worksheets/sheet1.xml',sheet],['xl/worksheets/sheet2.xml',sheetM],['xl/worksheets/sheet3.xml',sheetD]];
   return new Blob([zipStore(files.map(([n,t])=>[n,enc.encode(t)]))],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
 }
 function dataName(r){ return fileName(r).replace(/\.pdf$/,'.xlsx'); }
 function makeFiles(r){ return [makeFile(r), new File([dataXlsx(r)],dataName(r),{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})]; }
 
+
+/* ---------- rouvrir un compte rendu à partir du fichier .xlsx de la Dropbox ---------- */
+async function unzipEntries(buf){
+  const b=new Uint8Array(buf), dv=new DataView(buf), out={};
+  let e=b.length-22; while(e>=0&&dv.getUint32(e,true)!==0x06054b50) e--;
+  if(e<0) throw new Error('zip');
+  const cnt=dv.getUint16(e+10,true); let o=dv.getUint32(e+16,true);
+  const dec=new TextDecoder();
+  for(let i=0;i<cnt;i++){
+    const method=dv.getUint16(o+10,true), csize=dv.getUint32(o+20,true), nl=dv.getUint16(o+28,true), xl=dv.getUint16(o+30,true), cl=dv.getUint16(o+32,true), lo=dv.getUint32(o+42,true);
+    const name=dec.decode(b.subarray(o+46,o+46+nl)); o+=46+nl+xl+cl;
+    const ds=lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true), raw=b.subarray(ds,ds+csize);
+    out[name]={method,raw};
+  }
+  return out;
+}
+async function entryText(ent){
+  if(!ent) return null;
+  if(ent.method===0) return new TextDecoder().decode(ent.raw);
+  if(ent.method===8){ const st=new Blob([ent.raw]).stream().pipeThrough(new DecompressionStream('deflate-raw')); return await new Response(st).text(); }
+  throw new Error('compression');
+}
+async function readTdm6File(file){
+  const z=await unzipEntries(await file.arrayBuffer()), P=new DOMParser();
+  const wb=P.parseFromString(await entryText(z['xl/workbook.xml'])||'','application/xml');
+  const sh=[...wb.getElementsByTagName('sheet')].find(x=>x.getAttribute('name')==='_tdm6');
+  if(!sh) return {err:'ancien'};
+  const rid=sh.getAttribute('r:id')||sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id');
+  const rels=P.parseFromString(await entryText(z['xl/_rels/workbook.xml.rels'])||'','application/xml');
+  const rel=[...rels.getElementsByTagName('Relationship')].find(x=>x.getAttribute('Id')===rid);
+  let target=rel?rel.getAttribute('Target'):''; target=target.startsWith('/')?target.slice(1):'xl/'+target.replace(/^\.\//,'');
+  const sx=P.parseFromString(await entryText(z[target])||'','application/xml');
+  let shared=[]; const sst=z['xl/sharedStrings.xml'];
+  if(sst){ const d=P.parseFromString(await entryText(sst),'application/xml'); shared=[...d.getElementsByTagName('si')].map(si=>[...si.getElementsByTagName('t')].map(t=>t.textContent).join('')); }
+  const cells=[...sx.getElementsByTagName('c')].filter(c=>/^A\d+$/.test(c.getAttribute('r')||'')).sort((a,b)=>parseInt(a.getAttribute('r').slice(1))-parseInt(b.getAttribute('r').slice(1)));
+  const val=c=>{ const t=c.getAttribute('t'); if(t==='inlineStr') return [...c.getElementsByTagName('t')].map(x=>x.textContent).join('');
+    const v=c.getElementsByTagName('v')[0]; if(!v) return ''; return t==='s'?(shared[+v.textContent]||''):v.textContent; };
+  const json=cells.slice(1).map(val).join('');
+  let data; try{ data=JSON.parse(json); }catch(e){ return {err:'abime'}; }
+  const r=data&&data.record;
+  if(!r||!r.patient||!r.run||!Array.isArray(r.run.laps)) return {err:'abime'};
+  return {record:r};
+}
+function openRecord(r,source){
+  r=clone(r); r.run.status='done'; r.run.restOpen=null; r.pending=null; r.saved=false; r.reopened=source;
+  r.meas=r.meas||[]; r.vit=r.vit||{}; r.borg=r.borg||{rest:{d:null,f:null},end:{d:null,f:null}}; r.notes=r.notes||'';
+  cur=r; lastRecupBeep=3; persist(); $('saveStatus').textContent=''; renderAll(); window.scrollTo(0,0);
+}
 
 /* ---------- état ---------- */
 let cur=lsGet(LOCAL);
@@ -2158,6 +2231,7 @@ $('closeNo').onclick=()=>{ $('closeBox').hidden=true; };
 $('closeYes').onclick=()=>{ $('closeBox').hidden=true; closeTest(); };
 function closeTest(){ const usedId=cur.id; saveHist(cur); unlockScreen(); const len=cur.patient.len; const wasPre=cur.fromDpi; cur=null; lsSet(LOCAL,null); form=blankPatient(); form.len=len; fillForm(); if(dpiPre&&!wasPre) applyPre(); else { dpiPre=null; $('dpiBanner').hidden=true; try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){} } $('saveStatus').textContent=''; renderAll(); window.scrollTo(0,0); }
 function renderEnd(){ if(!cur) return; $('endLen').textContent=lapLen(cur); $('endLaps').value=cur.run.laps.length;
+  document.querySelector('#sEnd .recup').hidden=Date.now()-cur.run.end>15*60000;
   $('endTitle').textContent=cur.run.stopReason?'Arrêt prématuré ('+cur.run.stopReason+')':'Fin du test'; fillInputs(); renderMeasEdit(); renderEndResults(); renderSave(); }
 function renderEndResults(){ if(!cur||screen()!=='end') return; $('endResults').innerHTML=resultsHTML(cur); $('fname').textContent=fileName(cur)+' + '+dataName(cur); }
 
@@ -2167,14 +2241,27 @@ function renderHist(){
   $('histPanel').hidden=!hist.length;
   $('hist').innerHTML=hist.map(r=>{ const p=r.patient, c=compute(r);
     const del=confirmDel===r.id?`<span class="row"><button type="button" class="danger" data-delyes="${r.id}">Supprimer</button><button type="button" data-delno="1">Non</button></span>`
-      :`<span class="row"><button type="button" class="primary" data-share="${r.id}">Enregistrer</button><button type="button" class="ghost" data-del="${r.id}" aria-label="Supprimer">✕</button></span>`;
+      :`<span class="row"><button type="button" data-open="${r.id}">Rouvrir</button><button type="button" class="primary" data-share="${r.id}">Enregistrer</button><button type="button" class="ghost" data-del="${r.id}" aria-label="Supprimer">✕</button></span>`;
     return `<div class="hitem"><div><div class="t"><span class="dot${r.saved?' ok':''}"></span>${esc(quiEst(p))} · ${esc(p.eval)}</div><div class="note">${esc((p.date||'').split('-').reverse().join('/'))} · ${c.dist} m</div></div>${del}</div>`; }).join('');
 }
 $('hist').addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return;
   if(b.dataset.share){ const r=hist.find(x=>x.id===b.dataset.share); if(r){ const res=await shareRecord(r,null); if(res===true){ r.saved=true; lsSet(HIST,hist); renderHist(); } } }
+  if(b.dataset.open){ const r=hist.find(x=>x.id===b.dataset.open); if(r) openRecord(r,'hist'); return; }
   if(b.dataset.del){ confirmDel=b.dataset.del; renderHist(); }
   if(b.dataset.delno){ confirmDel=null; renderHist(); }
   if(b.dataset.delyes){ hist=hist.filter(x=>x.id!==b.dataset.delyes); confirmDel=null; lsSet(HIST,hist); renderHist(); }
+});
+
+$('reopenFile').addEventListener('change',async e=>{
+  const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
+  const st=$('reopenStatus'); st.className='status'; st.textContent='Lecture du fichier…';
+  try{
+    const res=await readTdm6File(f);
+    if(res.record){ st.textContent=''; openRecord(res.record,'fichier'); return; }
+    st.className='status warn';
+    st.textContent=res.err==='ancien'?'Ce fichier date d\u2019avant le 20/11/2026 : il ne contient que les valeurs du DPI, pas les mesures complètes. Le compte rendu ne peut pas être refait.'
+      :'Ce fichier ne contient pas de test lisible. Choisissez le fichier TDM6_….xlsx enregistré par cette page.';
+  }catch(err){ st.className='status warn'; st.textContent='Impossible de lire ce fichier. Choisissez le fichier TDM6_….xlsx enregistré par cette page.'; }
 });
 
 /* ---------- rendu ---------- */
